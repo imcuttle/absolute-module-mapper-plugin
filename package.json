@@ -1,0 +1,58 @@
+{
+  "name": "absolute-module-mapper-plugin",
+  "version": "1.0.0",
+  "main": "index.js",
+  "description": "The plugin on enhanced-resolver to map module path",
+  "author": "imcuttle <moyuyc95@gmail.com>",
+  "scripts": {
+    "test": "jest",
+    "prepublishOnly": "npm test",
+    "version": "npm run changelog",
+    "changelog": "conventional-changelog -p angular -i CHANGELOG.md -s -r 0 && git add CHANGELOG.md"
+  },
+  "husky": {
+    "hooks": {
+      "pre-commit": "pretty-quick --staged",
+      "commit-msg": "commitlint -e $HUSKY_GIT_PARAMS"
+    }
+  },
+  "sideEffects": false,
+  "engines": {
+    "node": ">=8"
+  },
+  "keywords": [
+    "imcuttle",
+    "absolute",
+    "module",
+    "mapper",
+    "plugin",
+    "absolute-module-mapper-plugin",
+    "webpack",
+    "enhanced-resolve"
+  ],
+  "license": "MIT",
+  "repository": "imcuttle/absolute-module-mapper-plugin",
+  "jest": {
+    "testMatch": [
+      "**/__test{s,}__/*.(spec|test).{t,j}s{x,}"
+    ]
+  },
+  "commitlint": {
+    "extends": [
+      "@commitlint/config-conventional"
+    ]
+  },
+  "devDependencies": {
+    "@commitlint/config-conventional": "^8.2.0",
+    "@types/jest": "^24.0.22",
+    "commitlint": "^8.2.0",
+    "conventional-changelog": "^3.1.12",
+    "enhanced-resolve": "^4.1.1",
+    "jest": "^24.9.0",
+    "prettier": "^1.19.0",
+    "pretty-quick": "^2.0.1"
+  },
+  "dependencies": {
+    "minimatch": "^3.0.4"
+  }
+}
