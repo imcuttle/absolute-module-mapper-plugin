@@ -33,44 +33,48 @@ function replaceRoot(value, root) {
   return value && value.replace(/<root>/g, root)
 }
 
+function normalizeMapper(mapper, replace) {
+  if (mapper && typeof mapper !== 'function') {
+    const map = {}
+    for (let [key, value] of Object.entries(mapper)) {
+      map[replace(key)] = typeof value === 'string' ? replace(value) : value
+    }
+    return filename => {
+      for (let [regStr, replacer] of Object.entries(map)) {
+        if (new RegExp(regStr).test(filename)) {
+          return filename.replace(new RegExp(regStr), replacer)
+        }
+      }
+
+      return filename
+    }
+  }
+
+  return mapper
+}
+
 function normalizeOptions(opts) {
   opts = Object.assign(
     {
       root: null,
       include: [],
       silent: true,
-      mapper: null
+      mapper: null,
+      requestMapper: null
     },
     opts
   )
+  const replace = value => (opts.root ? replaceRoot(value, opts.root) : value)
 
   if (opts.root) {
-    const replace = value => replaceRoot(value, opts.root)
-
     if (!opts.include.length) {
       opts.include = opts.include.concat(opts.root)
     }
     opts.include = opts.include.map(replace)
-
-    if (opts.mapper && typeof opts.mapper !== 'function') {
-      const map = {}
-      for (let [key, value] of Object.entries(opts.mapper)) {
-        map[replace(key)] = typeof value === 'string' ? replace(value) : value
-      }
-      opts.mapper = map;
-
-      const mapObj = opts.mapper
-      opts.mapper = filename => {
-        for (let [regStr, replacer] of Object.entries(mapObj)) {
-          if (new RegExp(regStr).test(filename)) {
-            return filename.replace(new RegExp(regStr), replacer)
-          }
-        }
-
-        return filename
-      }
-    }
   }
+
+  opts.mapper = normalizeMapper(opts.mapper, replace)
+  opts.requestMapper = normalizeMapper(opts.requestMapper, replace)
 
   return opts
 }
@@ -81,23 +85,47 @@ class AbsoluteModuleMapperPlugin {
   }
 
   apply(resolver) {
-    const target = resolver.ensureHook('resolved')
-    const { mapper, include, root, silent } = this.options
-    resolver.getHook('existingFile').tapAsync('AbsoluteModuleMapperPlugin', (request, resolveContext, callback) => {
-      const from = request.context.issuer
+    const { mapper, requestMapper, include, root, silent } = this.options
 
-      if (from && mapper && isMatch(include, from)) {
-        const old = request.path
-        request.path = replaceRoot(mapper(request.path, request), root)
+    if (requestMapper) {
+      const requestTarget = resolver.ensureHook('parsedResolve')
+      resolver.getHook('resolve').tapAsync('AbsoluteModuleMapperPlugin', (request, resolveContext, callback) => {
+        const from = request.context.issuer
+        if (from && isMatch(include, from)) {
+          const old = request.request
+          request.request = requestMapper(requestMapper(old, request), root)
 
-        !silent && old !== request.path && console.log('AbsoluteModuleMapperPlugin: in %s\n  %s => %s', from, old, request.path)
-      }
-      resolver.doResolve(target, request, null, resolveContext, callback)
-    })
+          !silent &&
+            old !== request.request &&
+            console.log('AbsoluteModuleMapperPlugin resolveRequest: in %s\n  %s => %s', from, old, request.request)
+        }
+
+        callback()
+        // resolver.doResolve(requestTarget, request, null, resolveContext, callback)
+      })
+    }
+
+    if (mapper) {
+      const target = resolver.ensureHook('resolved')
+      resolver.getHook('existingFile').tapAsync('AbsoluteModuleMapperPlugin', (request, resolveContext, callback) => {
+        const from = request.context.issuer
+        if (from && isMatch(include, from)) {
+          const old = request.path
+          request.path = replaceRoot(mapper(old, request), root)
+
+          !silent &&
+            old !== request.path &&
+            console.log('AbsoluteModuleMapperPlugin path: in %s\n  %s => %s', from, old, request.path)
+        }
+
+        callback()
+        // resolver.doResolve(target, request, null, resolveContext, callback)
+      })
+    }
   }
 }
-AbsoluteModuleMapperPlugin.isMatch = isMatch;
-AbsoluteModuleMapperPlugin.replaceRoot = replaceRoot;
-AbsoluteModuleMapperPlugin.isMatch = normalizeOptions;
+AbsoluteModuleMapperPlugin.isMatch = isMatch
+AbsoluteModuleMapperPlugin.replaceRoot = replaceRoot
+AbsoluteModuleMapperPlugin.isMatch = normalizeOptions
 
 module.exports = AbsoluteModuleMapperPlugin

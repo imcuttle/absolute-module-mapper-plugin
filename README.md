@@ -83,11 +83,25 @@ The included paths for mapping
 
 ### `mapper`
 
+absolute filename mapper.
+
 - Type: `(filename, ctx) => string | {}`
 - Example
 ```javascript
 {
    '^<root>/from/(\w+)': '<root>/to/$1'
+}
+```
+
+### `requestMapper`
+
+request mapper.
+
+- Type: `(request, ctx) => string | {}`
+- Example
+```javascript
+{
+   '^./a.js$': './b.js'
 }
 ```
 
