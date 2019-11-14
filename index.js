@@ -93,7 +93,7 @@ class AbsoluteModuleMapperPlugin {
         const from = request.context.issuer
         if (from && isMatch(include, from)) {
           const old = request.request
-          request.request = requestMapper(requestMapper(old, request), root)
+          request.request = replaceRoot(requestMapper(old, request), root)
 
           !silent &&
             old !== request.request &&
