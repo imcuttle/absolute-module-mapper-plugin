@@ -113,7 +113,7 @@ class AbsoluteModuleMapperPlugin {
 
               !silent &&
                 old !== request.request &&
-                console.log('AbsoluteModuleMapperPlugin resolveRequest: in %s\n  %s => %s', from, old, request.request)
+                console.log(this.constructor.name + ' resolveRequest: in %s\n  %s => %s', from, old, request.request)
 
               callback()
             }
@@ -138,7 +138,7 @@ class AbsoluteModuleMapperPlugin {
               request.path = replaceRoot(result || old, root)
               !silent &&
                 old !== request.path &&
-                console.log('AbsoluteModuleMapperPlugin path: in %s\n  %s => %s', from, old, request.path)
+                console.log(this.constructor.name + ' path: in %s\n  %s => %s', from, old, request.path)
               callback()
             }
           })
