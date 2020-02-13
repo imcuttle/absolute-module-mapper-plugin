@@ -39,7 +39,7 @@ function normalizeMapper(mapper, replace) {
     for (let [key, value] of Object.entries(mapper)) {
       map[replace(key)] = typeof value === 'string' ? replace(value) : value
     }
-    return filename => {
+    mapper = filename => {
       for (let [regStr, replacer] of Object.entries(map)) {
         if (new RegExp(regStr).test(filename)) {
           return filename.replace(new RegExp(regStr), replacer)
@@ -47,6 +47,17 @@ function normalizeMapper(mapper, replace) {
       }
 
       return filename
+    }
+  }
+
+  if (typeof mapper === 'function') {
+    return (input, req, cb) => {
+      // without callback
+      if (mapper.length < 3) {
+        return cb(null, mapper(input, req))
+      }
+
+      return mapper(input, req, cb)
     }
   }
 
@@ -93,15 +104,19 @@ class AbsoluteModuleMapperPlugin {
         const from = request.context.issuer
         if (from && isMatch(include, from)) {
           const old = request.request
-          request.request = replaceRoot(requestMapper(old, request), root)
+          requestMapper(old, request, (error, result) => {
+            if (error) callback(error)
+            else {
+              request.request = replaceRoot(result || old, root)
 
-          !silent &&
-            old !== request.request &&
-            console.log('AbsoluteModuleMapperPlugin resolveRequest: in %s\n  %s => %s', from, old, request.request)
+              !silent &&
+                old !== request.request &&
+                console.log('AbsoluteModuleMapperPlugin resolveRequest: in %s\n  %s => %s', from, old, request.request)
+
+              callback()
+            }
+          })
         }
-
-        callback()
-        // resolver.doResolve(requestTarget, request, null, resolveContext, callback)
       })
     }
 
@@ -111,15 +126,18 @@ class AbsoluteModuleMapperPlugin {
         const from = request.context.issuer
         if (from && isMatch(include, from)) {
           const old = request.path
-          request.path = replaceRoot(mapper(old, request), root)
 
-          !silent &&
-            old !== request.path &&
-            console.log('AbsoluteModuleMapperPlugin path: in %s\n  %s => %s', from, old, request.path)
+          mapper(old, request, (error, result) => {
+            if (error) callback(error)
+            else {
+              request.path = replaceRoot(result || old, root)
+              !silent &&
+                old !== request.path &&
+                console.log('AbsoluteModuleMapperPlugin path: in %s\n  %s => %s', from, old, request.path)
+              callback()
+            }
+          })
         }
-
-        callback()
-        // resolver.doResolve(target, request, null, resolveContext, callback)
       })
     }
   }

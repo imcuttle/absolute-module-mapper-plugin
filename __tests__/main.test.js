@@ -45,6 +45,27 @@ describe('absoluteModuleMapperPlugin', function() {
     expect(path).toBe(fixture('to/a.js'))
   });
 
+
+  it('should mapper async', function (done) {
+    const resolver = ResolverFactory.createResolver({
+      ...resolverOptions,
+      plugins: [new AbsoluteModuleMapperPlugin({
+        root: fixture(''),
+        silent: false,
+        mapper: (path, ctx, cb) => {
+          cb(null, path.replace(new RegExp('/module/(\\w+)'), '/to/$1'))
+        }
+      })]
+    })
+
+    resolver.resolve({
+      issuer: fixture('module/index.js')
+    }, fixture('module'), './a.js', {}, (err, result) => {
+      expect(result).toBe(fixture('to/a.js'))
+      done(err)
+    })
+  });
+
   it('should requestMapper', function () {
     const resolver = ResolverFactory.createResolver({
       ...resolverOptions,

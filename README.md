@@ -85,7 +85,7 @@ The included paths for mapping
 
 absolute filename mapper.
 
-- Type: `(filename, ctx) => string | {}`
+- Type: `(filename, ctx) => string | (filename, ctx, callback) => void  | {}`
 - Example
 ```javascript
 {
@@ -97,7 +97,7 @@ absolute filename mapper.
 
 request mapper.
 
-- Type: `(request, ctx) => string | {}`
+- Type: `(request, ctx) => string | (request, ctx, callback) => void | {}`
 - Example
 ```javascript
 {
