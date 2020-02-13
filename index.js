@@ -69,6 +69,7 @@ function normalizeOptions(opts) {
     {
       root: null,
       include: [],
+      exclude: [],
       silent: true,
       mapper: null,
       requestMapper: null
@@ -82,6 +83,7 @@ function normalizeOptions(opts) {
       opts.include = opts.include.concat(opts.root)
     }
     opts.include = opts.include.map(replace)
+    opts.exclude = opts.exclude.map(replace)
   }
 
   opts.mapper = normalizeMapper(opts.mapper, replace)
@@ -96,13 +98,13 @@ class AbsoluteModuleMapperPlugin {
   }
 
   apply(resolver) {
-    const { mapper, requestMapper, include, root, silent } = this.options
+    const { mapper, requestMapper, include, exclude, root, silent } = this.options
 
     if (requestMapper) {
       const requestTarget = resolver.ensureHook('parsedResolve')
       resolver.getHook('resolve').tapAsync('AbsoluteModuleMapperPlugin', (request, resolveContext, callback) => {
         const from = request.context.issuer
-        if (from && isMatch(include, from)) {
+        if (from && isMatch(include, from) && !isMatch(exclude, from)) {
           const old = request.request
           requestMapper(old, request, (error, result) => {
             if (error) callback(error)
@@ -117,6 +119,9 @@ class AbsoluteModuleMapperPlugin {
             }
           })
         }
+        else {
+          callback()
+        }
       })
     }
 
@@ -124,7 +129,7 @@ class AbsoluteModuleMapperPlugin {
       const target = resolver.ensureHook('resolved')
       resolver.getHook('existingFile').tapAsync('AbsoluteModuleMapperPlugin', (request, resolveContext, callback) => {
         const from = request.context.issuer
-        if (from && isMatch(include, from)) {
+        if (from && isMatch(include, from) && !isMatch(exclude, from)) {
           const old = request.path
 
           mapper(old, request, (error, result) => {
@@ -137,6 +142,9 @@ class AbsoluteModuleMapperPlugin {
               callback()
             }
           })
+        }
+        else {
+          callback()
         }
       })
     }

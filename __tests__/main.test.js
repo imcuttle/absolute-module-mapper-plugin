@@ -45,6 +45,31 @@ describe('absoluteModuleMapperPlugin', function() {
     expect(path).toBe(fixture('to/a.js'))
   });
 
+  it('should mapper exclude node_modules', function () {
+    const resolver = ResolverFactory.createResolver({
+      ...resolverOptions,
+      plugins: [new AbsoluteModuleMapperPlugin({
+        root: fixture(''),
+        silent: false,
+        // include: [
+        //   '**{,/}!node_modules{,/}**'
+        // ],
+        exclude: [
+          '**/node_modules/**'
+        ],
+        mapper: {
+          '^<root>/module/(\\w+)': '<root>/to/$1'
+        }
+      })]
+    })
+
+    const path = resolver.resolveSync({
+      issuer: fixture('node_modules/index.js')
+    }, fixture('module'), './a.js')
+
+    expect(path).toBe(fixture('module/a.js'))
+  });
+
 
   it('should mapper async', function (done) {
     const resolver = ResolverFactory.createResolver({

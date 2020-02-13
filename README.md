@@ -81,6 +81,12 @@ The included paths for mapping
 - Type: `Array<string|Function|RegExp>`
 - Default: `[options.root]`
 
+### `exclude`
+The excluded paths for mapping
+
+- Type: `Array<string|Function|RegExp>`
+- Default: `[]`
+
 ### `mapper`
 
 absolute filename mapper.
