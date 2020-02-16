@@ -1,6 +1,6 @@
 {
   "name": "absolute-module-mapper-plugin",
-  "version": "1.2.4",
+  "version": "1.3.0",
   "main": "index.js",
   "description": "The plugin on enhanced-resolver to map module path",
   "author": "imcuttle <moyuyc95@gmail.com>",
