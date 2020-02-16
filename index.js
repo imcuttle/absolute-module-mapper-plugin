@@ -101,8 +101,7 @@ class AbsoluteModuleMapperPlugin {
     const { mapper, requestMapper, include, exclude, root, silent } = this.options
 
     if (requestMapper) {
-      const requestTarget = resolver.ensureHook('parsedResolve')
-      resolver.getHook('resolve').tapAsync('AbsoluteModuleMapperPlugin', (request, resolveContext, callback) => {
+      resolver.getHook('parsedResolve').tapAsync('AbsoluteModuleMapperPlugin', (request, resolveContext, callback) => {
         const from = request.context.issuer
         if (from && isMatch(include, from) && !isMatch(exclude, from)) {
           const old = request.request
@@ -126,7 +125,6 @@ class AbsoluteModuleMapperPlugin {
     }
 
     if (mapper) {
-      const target = resolver.ensureHook('resolved')
       resolver.getHook('existingFile').tapAsync('AbsoluteModuleMapperPlugin', (request, resolveContext, callback) => {
         const from = request.context.issuer
         if (from && isMatch(include, from) && !isMatch(exclude, from)) {
