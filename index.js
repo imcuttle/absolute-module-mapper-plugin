@@ -97,11 +97,15 @@ class AbsoluteModuleMapperPlugin {
     this.options = normalizeOptions(options || {})
   }
 
+  get name() {
+    return this.constructor.displayName || this.constructor.name
+  }
+
   apply(resolver) {
     const { mapper, requestMapper, include, exclude, root, silent } = this.options
 
     if (requestMapper) {
-      resolver.getHook('parsedResolve').tapAsync('AbsoluteModuleMapperPlugin', (request, resolveContext, callback) => {
+      resolver.getHook('resolve').tapAsync(this.name, (request, resolveContext, callback) => {
         const from = request.context.issuer
         if (from && isMatch(include, from) && !isMatch(exclude, from)) {
           const old = request.request
@@ -112,7 +116,7 @@ class AbsoluteModuleMapperPlugin {
 
               !silent &&
                 old !== request.request &&
-                console.log(this.constructor.name + ' resolveRequest: in %s\n  %s => %s', from, old, request.request)
+                console.log(this.name + ' resolveRequest: in %s\n  %s => %s', from, old, request.request)
 
               callback()
             }
@@ -125,7 +129,7 @@ class AbsoluteModuleMapperPlugin {
     }
 
     if (mapper) {
-      resolver.getHook('existingFile').tapAsync('AbsoluteModuleMapperPlugin', (request, resolveContext, callback) => {
+      resolver.getHook('existingFile').tapAsync(this.name, (request, resolveContext, callback) => {
         const from = request.context.issuer
         if (from && isMatch(include, from) && !isMatch(exclude, from)) {
           const old = request.path
@@ -136,7 +140,7 @@ class AbsoluteModuleMapperPlugin {
               request.path = replaceRoot(result || old, root)
               !silent &&
                 old !== request.path &&
-                console.log(this.constructor.name + ' path: in %s\n  %s => %s', from, old, request.path)
+                console.log(this.name + ' path: in %s\n  %s => %s', from, old, request.path)
               callback()
             }
           })
