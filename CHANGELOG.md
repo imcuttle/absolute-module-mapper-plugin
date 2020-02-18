@@ -1,3 +1,7 @@
+## [1.3.1](https://github.com/imcuttle/absolute-module-mapper-plugin/compare/v1.3.0...v1.3.1) (2020-02-18)
+
+
+
 # [1.3.0](https://github.com/imcuttle/absolute-module-mapper-plugin/compare/v1.2.4...v1.3.0) (2020-02-16)
 
 
